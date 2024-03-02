@@ -4,28 +4,39 @@
 3. Create a txt file to save the user input using the native fs node module.
 */
 import inquirer from 'inquirer';
-const fs = require('node:fs');
+import { writeFile } from 'fs';
+import qrImage from 'qr-image';
+
+const question = {
+    type: 'input',
+    name: 'website-url',
+    message: 'Enter the URL of the website:'
+}
 
 inquirer
-  .prompt([
-    console.log("Type the website for creating a qr-code: ")
-  ])
+  .prompt([question])
   .then((answers) => {
-    // Use user feedback for... whatever!!
-    fs.writeFile("url.txt", answers, (err) => {
-        if (err)
-          console.log(err);
-        else {
-          console.log("File written successfully\n");
-          console.log("The written has the following contents:");
-          console.log(fs.readFileSync("books.txt", "utf8"));
-        }
-      });
+    const url = answers['website-url'];
+
+    // Create a QR code PNG
+    const qr_png = qrImage.imageSync(url, { type: 'png' });
+
+    // Write the PNG data to a file
+    writeFile('web-qr.png', qr_png, (err) => {
+        if (err) throw err;
+        console.log('The QR code PNG has been saved!');
+    });
+
+    // Write the URL to a text file
+    writeFile('message.txt', url, (err) => {
+        if (err) throw err;
+        console.log('The URL has been saved!');
+    });
   })
   .catch((error) => {
     if (error.isTtyError) {
-      // Prompt couldn't be rendered in the current environment
+      console.log("Error occurred while prompting.");
     } else {
-      // Something else went wrong
+      console.log("Another error occurred.");
     }
   });
